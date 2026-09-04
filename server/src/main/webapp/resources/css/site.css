@@ -1,0 +1,291 @@
+/* =====================================================================================
+   Sunrise Dental Clinic - stylesheet
+   Hand-written rather than pulled from a CSS framework: the whole UI is a handful of forms
+   and tables, and a framework would add far more than it saved. Ends with a print block so
+   the receipt prints without the navigation.
+   ===================================================================================== */
+
+:root {
+    --ink: #1c2733;
+    --muted: #64748b;
+    --line: #dbe2ea;
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --brand: #0f5c74;
+    --brand-dark: #0b4657;
+    --ok-bg: #e7f6ec;
+    --ok-ink: #1c6b38;
+    --err-bg: #fdeceb;
+    --err-ink: #a52620;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+    background: var(--bg);
+}
+
+/* ------------------------------------ Top bar -------------------------------------- */
+.topbar { background: var(--brand); color: #fff; }
+
+.topbar-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 56px;
+    flex-wrap: wrap;
+}
+
+.brand { font-weight: 600; font-size: 17px; color: #fff; text-decoration: none; }
+
+.topbar nav { display: flex; gap: 18px; flex: 1; }
+.topbar nav a { color: #d7ebf1; text-decoration: none; }
+.topbar nav a:hover { color: #fff; text-decoration: underline; }
+
+.session { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.session .who { font-weight: 600; }
+.session .role {
+    background: var(--brand-dark);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    letter-spacing: .03em;
+}
+.session .logout { color: #d7ebf1; text-decoration: underline; }
+
+/* -------------------------------------- Page --------------------------------------- */
+.page { max-width: 1100px; margin: 0 auto; padding: 24px 20px 48px; }
+
+.page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+h1 { font-size: 22px; margin: 0; }
+h2 { font-size: 16px; margin: 0 0 10px; }
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.muted, .optional { color: var(--muted); }
+.empty { color: var(--muted); padding: 24px 0; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+.notes { border-left: 3px solid var(--line); padding-left: 12px; color: var(--muted); }
+
+/* ------------------------------------- Alerts -------------------------------------- */
+.alert {
+    padding: 11px 14px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    border: 1px solid transparent;
+}
+.alert-ok { background: var(--ok-bg); color: var(--ok-ink); border-color: #bfe3cc; }
+.alert-error { background: var(--err-bg); color: var(--err-ink); border-color: #f2c4c1; }
+
+/* ------------------------------------ Controls ------------------------------------- */
+button, .btn {
+    display: inline-block;
+    background: var(--brand);
+    color: #fff;
+    border: 1px solid var(--brand);
+    border-radius: 6px;
+    padding: 8px 15px;
+    font-size: 14px;
+    font-family: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+button:hover, .btn:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
+
+.btn-quiet, button.btn-quiet {
+    background: #fff;
+    color: var(--ink);
+    border-color: var(--line);
+}
+.btn-quiet:hover, button.btn-quiet:hover { background: #eef2f6; border-color: #c3cedb; color: var(--ink); }
+
+.btn-danger, button.btn-danger { background: #a52620; border-color: #a52620; }
+.btn-danger:hover, button.btn-danger:hover { background: #861f1a; border-color: #861f1a; }
+
+.button-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+input[type=text], input[type=password], input[type=email], input[type=date],
+input[type=time], input[type=number], select, textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+    color: var(--ink);
+}
+input:focus, select:focus, textarea:focus {
+    outline: 2px solid rgba(15, 92, 116, .25);
+    border-color: var(--brand);
+}
+
+label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+
+.toolbar {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+}
+.inline-form { display: flex; gap: 8px; align-items: flex-end; }
+.inline-form label { margin-bottom: 0; align-self: center; }
+.inline-form input { width: auto; min-width: 170px; }
+
+/* -------------------------------------- Forms -------------------------------------- */
+fieldset {
+    border: none;
+    border-top: 1px solid var(--line);
+    padding: 16px 0 0;
+    margin: 0 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+legend { font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.field-wide { grid-column: 1 / -1; }
+.field small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+.field-error { display: block; color: var(--err-ink); font-size: 12px; margin-top: 4px; }
+.actions { display: flex; gap: 10px; }
+
+/* -------------------------------------- Tables ------------------------------------- */
+table { width: 100%; border-collapse: collapse; }
+
+.grid { background: var(--card); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.grid th, .grid td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+.grid thead th {
+    background: #eef2f6;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+}
+.grid tbody tr:last-child td { border-bottom: none; }
+.grid tbody tr:hover { background: #f8fafc; }
+
+.amount { text-align: right; font-variant-numeric: tabular-nums; }
+
+dl { display: grid; grid-template-columns: minmax(90px, auto) 1fr; gap: 6px 14px; margin: 0; }
+dt { font-weight: 600; color: var(--muted); font-size: 13px; }
+dd { margin: 0; }
+
+.totals td { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.totals .total-row td { font-weight: 700; border-bottom: none; border-top: 2px solid var(--ink); padding-top: 10px; }
+
+/* ------------------------------------- Statuses ------------------------------------ */
+.status {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    padding: 3px 9px;
+    border-radius: 10px;
+    background: #eef2f6;
+    color: var(--muted);
+}
+.status-BOOKED { background: #e3effa; color: #1d4f7c; }
+.status-ATTENDED { background: var(--ok-bg); color: var(--ok-ink); }
+.status-CANCELLED { background: #eef2f6; color: var(--muted); }
+.status-NO_SHOW { background: var(--err-bg); color: var(--err-ink); }
+
+/* --------------------------------------- Help -------------------------------------- */
+.help h2 { margin-top: 22px; }
+.help h2:first-child { margin-top: 0; }
+.help ol, .help ul { padding-left: 22px; }
+.help li { margin-bottom: 6px; }
+
+/* -------------------------------------- Login -------------------------------------- */
+.login-body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.login-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 32px;
+    width: 100%;
+    max-width: 380px;
+}
+.login-card h1 { font-size: 20px; margin-bottom: 2px; }
+.login-card .sub { color: var(--muted); margin: 0 0 22px; }
+.login-card label { margin-top: 14px; }
+.login-card button { width: 100%; margin-top: 20px; padding: 10px; }
+.login-card .hint { color: var(--muted); font-size: 12px; margin: 18px 0 0; }
+
+/* ------------------------------------- Receipt ------------------------------------- */
+.receipt {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 28px 32px;
+    max-width: 660px;
+}
+.receipt-head { text-align: center; border-bottom: 2px solid var(--ink); padding-bottom: 14px; }
+.receipt-head h2 { font-size: 19px; margin-bottom: 4px; }
+.receipt-head p { margin: 0; color: var(--muted); font-size: 13px; }
+
+.receipt-meta { margin: 18px 0; font-size: 13px; }
+.receipt-meta th { text-align: left; color: var(--muted); font-weight: 600; padding: 4px 10px 4px 0; width: 1%; white-space: nowrap; }
+.receipt-meta td { padding: 4px 20px 4px 0; }
+
+.receipt-lines { margin-top: 10px; }
+.receipt-lines th, .receipt-lines td { padding: 9px 0; border-bottom: 1px solid var(--line); text-align: left; }
+.receipt-lines thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.receipt-lines tfoot th { border-bottom: none; border-top: 2px solid var(--ink); font-size: 15px; padding-top: 12px; }
+
+.receipt-foot { margin-top: 22px; text-align: center; color: var(--muted); font-size: 12px; }
+
+/* -------------------------------------- Footer ------------------------------------- */
+.foot {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 18px 20px 32px;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+/* ---------------------------------- Print styles -----------------------------------
+   Requirement 4 is "print the patient bill/receipt". Rather than generate a PDF, the
+   receipt page is styled for paper: navigation, buttons and footer are removed, colour
+   is dropped, and the receipt fills the page.
+   ----------------------------------------------------------------------------------- */
+@media print {
+    .topbar, .foot, .no-print, .alert, .page-head { display: none !important; }
+    body { background: #fff; font-size: 12pt; }
+    .page { padding: 0; max-width: none; }
+    .receipt { border: none; border-radius: 0; padding: 0; max-width: none; }
+    .receipt-head { border-bottom: 2px solid #000; }
+    .receipt-lines tfoot th { border-top: 2px solid #000; }
+}
