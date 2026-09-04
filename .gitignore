@@ -20,3 +20,8 @@ application-local.yml
 application-local.properties
 .env
 *.env
+
+# Build tooling for the report generator
+__pycache__/
+*.py[cod]
+*.textClipping
