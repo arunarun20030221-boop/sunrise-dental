@@ -1,0 +1,105 @@
+name: CI
+
+# Runs on every push and every pull request, so the test suite is the gate on all work
+# reaching the default branch rather than something remembered by hand before submission.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    # A real PostgreSQL, not an in-memory substitute. The schema contains a sequence, three
+    # PL/pgSQL stored functions and a trigger; H2 cannot run any of those, so an H2-backed
+    # pipeline would silently skip exactly the database features the system relies on.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: sunrise_dental
+          POSTGRES_USER: sunrise
+          POSTGRES_PASSWORD: sunrise
+        ports:
+          - 5432:5432
+        # Without a health check the build races the database and fails intermittently.
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          # Caches ~/.m2 between runs, so a build takes seconds rather than re-downloading
+          # every dependency each time.
+          cache: 'maven'
+
+      - name: Verify the three-tier architecture
+        # Reads the real import statements and fails if any layer reaches past its neighbour.
+        # Folder names prove nothing on their own - a controller that queries a DAO directly
+        # is a two-tier application in three directories. This makes the layering a build gate.
+        run: ./verify-layers.sh
+
+      - name: Build and run the test suite
+        run: mvn --batch-mode --no-transfer-progress verify
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/sunrise_dental
+          DB_USERNAME: sunrise
+          DB_PASSWORD: sunrise
+
+      - name: Verify the schema, stored functions and trigger apply cleanly
+        # Applies the real scripts to the service database and asserts the objects exist.
+        # This is what proves the SQL in version control is deployable, not just that the
+        # Java compiles.
+        run: |
+          export PGPASSWORD=sunrise
+          psql -h localhost -U sunrise -d sunrise_dental \
+               -f server/src/main/resources/db/schema.sql
+          # routines.sql uses ';;' as its statement separator because PL/pgSQL bodies contain
+          # semicolons; psql needs them turned back into plain ';'.
+          sed 's/;;/;/g' server/src/main/resources/db/routines.sql > /tmp/routines.sql
+          psql -h localhost -U sunrise -d sunrise_dental -f /tmp/routines.sql
+          psql -h localhost -U sunrise -d sunrise_dental \
+               -f server/src/main/resources/db/data.sql
+
+          echo "--- verifying database objects ---"
+          psql -h localhost -U sunrise -d sunrise_dental -tAc \
+            "SELECT 'functions: ' || count(*) FROM information_schema.routines
+             WHERE routine_schema = 'public'"
+          psql -h localhost -U sunrise -d sunrise_dental -tAc \
+            "SELECT 'triggers: ' || count(*) FROM information_schema.triggers
+             WHERE trigger_schema = 'public'"
+          # Fail the build if the stored functions are missing rather than merely reporting it.
+          psql -h localhost -U sunrise -d sunrise_dental -v ON_ERROR_STOP=1 -c \
+            "SELECT next_appointment_number();" \
+            -c "SELECT * FROM revenue_by_treatment(CURRENT_DATE - 30, CURRENT_DATE);" \
+            -c "SELECT * FROM dentist_workload(CURRENT_DATE - 30, CURRENT_DATE);"
+
+      - name: Upload the WAR
+        # Keeps the deployable artefact from every commit, which is the evidence that a
+        # particular version was built and could be deployed.
+        uses: actions/upload-artifact@v4
+        with:
+          name: sunrise-dental-war
+          path: server/target/sunrise-dental.war
+          if-no-files-found: error
+
+      - name: Upload test reports
+        # Runs even when the tests fail, because that is exactly when the reports are wanted.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: server/target/surefire-reports/
+          if-no-files-found: warn
