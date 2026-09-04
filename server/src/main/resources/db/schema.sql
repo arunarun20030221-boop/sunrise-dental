@@ -57,6 +57,25 @@ CREATE TABLE IF NOT EXISTS appointment (
 );
 
 CREATE INDEX IF NOT EXISTS idx_appointment_dentist_date ON appointment (dentist_id, appointment_date);
+
+-- Database-level guard against two receptionists booking the SAME slot simultaneously.
+--
+-- AppointmentSchedulingRules already rejects clashes, but it reads the diary and then
+-- inserts, and those two steps are not atomic: under a genuine race both requests can
+-- pass validation before either has inserted. A partial unique index makes the database
+-- the final arbiter, which is the only place that can be.
+--
+-- SCOPE, stated precisely: this closes the *identical start time* race - the likely one,
+-- where two staff are offered the same free slot and both take it. It does NOT close
+-- partial overlaps (a 10:15 booking racing a 10:00-10:45 one), because a unique index
+-- cannot express interval overlap. Closing that would need an exclusion constraint over
+-- a tsrange, which is noted as future work rather than implemented here.
+--
+-- Partial (WHERE ...) so that cancelled and no-show rows do not occupy the slot: a
+-- cancelled appointment must leave the time free to be booked again.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_appointment_dentist_slot
+    ON appointment (dentist_id, appointment_date, appointment_time)
+    WHERE status IN ('BOOKED', 'ATTENDED');
 CREATE INDEX IF NOT EXISTS idx_appointment_date ON appointment (appointment_date);
 
 CREATE TABLE IF NOT EXISTS bill (
