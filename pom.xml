@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.sunrise.dental</groupId>
+    <artifactId>sunrise-dental-system</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>Sunrise Dental Clinic Management System</name>
+    <description>
+        CIS6003 Advanced Programming (WRIT1) - appointment and patient management system.
+        Multi-module: 'server' hosts the REST web services and staff web UI,
+        'client' is a separate menu-driven console process that consumes those services
+        over HTTP, making the application genuinely distributed.
+    </description>
+
+    <modules>
+        <module>server</module>
+        <module>client</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>${java.version}</release>
+                    <compilerArgs>
+                        <!--
+                          Keeps method parameter names in the class file.
+
+                          Spring MVC reads them to work out what a bare @RequestParam or
+                          @PathVariable is called. Without this flag javac discards the names and
+                          every such handler fails at runtime with "parameter name information not
+                          available via reflection". Spring Boot's parent POM sets this for you;
+                          a plain Spring build has to ask for it.
+                        -->
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

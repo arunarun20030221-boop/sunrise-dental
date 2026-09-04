@@ -1,0 +1,22 @@
+target/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+nbproject/
+.settings/
+.classpath
+.project
+
+# OS
+.DS_Store
+
+# Local configuration and secrets - never commit credentials
+application-local.yml
+application-local.properties
+.env
+*.env
