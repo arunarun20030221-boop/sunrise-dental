@@ -8,9 +8,11 @@ import com.sunrise.dental.domain.Dentist;
 import com.sunrise.dental.domain.Patient;
 import com.sunrise.dental.domain.TreatmentType;
 import com.sunrise.dental.dto.AppointmentRequest;
+import com.sunrise.dental.exception.DoubleBookingException;
 import com.sunrise.dental.exception.NotFoundException;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,7 +88,21 @@ public class AppointmentService {
         // (000001 then 000004) and look as though records had been lost.
         appointment.setAppointmentNumber(appointmentDao.nextAppointmentNumber());
 
-        Appointment saved = appointmentDao.insert(appointment);
+        Appointment saved;
+        try {
+            saved = appointmentDao.insert(appointment);
+        } catch (DuplicateKeyException raceLost) {
+            // The unique index on (dentist, date, time) rejected this insert, which means
+            // another receptionist took the identical slot between our diary read above and
+            // this write. The rules did not fail - they were simply working from a diary that
+            // was already stale. Report it as the same clash the user would have seen a moment
+            // earlier, rather than as a database error they can do nothing about.
+            throw new DoubleBookingException(
+                    "%s has just been booked for %s at %s by another member of staff. Please choose another slot."
+                            .formatted(dentist.getName(), request.appointmentDate(),
+                                    request.appointmentTime()));
+        }
+
         notificationService.appointmentConfirmed(saved);
         return saved;
     }
