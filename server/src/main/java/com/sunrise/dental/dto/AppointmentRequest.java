@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * Incoming appointment registration, carrying the fields the brief lists for a new patient.
@@ -45,11 +46,19 @@ public record AppointmentRequest(
         @NotNull(message = "Please select a treatment type")
         Long treatmentTypeId,
 
+        // ISO format is required in BOTH directions, and the rendering direction is the one
+        // that bites. An <input type="date"> accepts only yyyy-MM-dd and an <input type="time">
+        // only HH:mm; given anything else the browser silently shows an empty field. Without
+        // this annotation Spring rendered the bound values in the JVM's locale format
+        // ("11/12/26", "2:00 PM"), so whenever a booking was refused the receptionist got the
+        // form back with the date and time blanked and had to retype them.
         @NotNull(message = "Appointment date is required")
         @FutureOrPresent(message = "Appointment date cannot be in the past")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         LocalDate appointmentDate,
 
         @NotNull(message = "Appointment time is required")
+        @DateTimeFormat(pattern = "HH:mm")
         LocalTime appointmentTime,
 
         @Min(value = 1, message = "At least one session is required")
